@@ -1,7 +1,213 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 1 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Homework 1: Rasterizer</h1>
+<h2 align="middle">Kabir Goel</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>
+  In this homework, I implemented a simple rasterizer capable of drawing triangles and applying textures to them. In the process, I learned about how rasterization, antialiasing, texture mapping, mipmap, supersampling, and barycentric coordinates work.
+</p>
+
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>
+The following steps are followed to rasterize a triangle:
+</p>
+<ol>
+  <li>Calculate the bounding box of the triangle by finding the leftmost, rightmost, topmost, and bottommost vertices.</li>
+  <li>Loop through all the pixels in the bounding box of the triangle</li>
+  <li>For each pixel, check if it lies within the triangle. (I used <code>inside</code> from triangulation.cpp, though I modified it to work regardless of winding order.)</li>
+  <li>If a pixel lies within the triangle, color it with the color of the triangle</li>
+</ol>
+<p>
+This algorithm is no worse than checking every pixel in the bounding box of the triangle, because it is exactly that.
+</p>
+<figure align="middle">
+<img src="images/task1.png" alt="Task 1" style="width: 500px;"/>
+<figcaption>Task 1 deliverable.</figcaption>
+</figure>
+
+<h3 align="middle">Part 2: Antialiasing triangles</h3>
+<p>
+To implement supersampling, I used a sample buffer that is <code>sample_rate</code> times as large as the framebuffer. A function called resolve_to_framebuffer is called at the end of the rasterization process to average the colors of the supersamples and write them to the framebuffer.
+<br /><br />
+My supersampling algorithm works by iterating over the supersamples for each pixel. Inside-checking is done for each supersample, and the sample buffer is filled accordingly.
+<br /><br />
+Here is an example of the same SVG rasterized with different sample rates. The reason the sample rate increasing makes the image look better is that supersampling allows for fractional pixel coverage by averaging the colors of the supersamples, which results in less jagged edges.
+</p>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task2_1.png" align="middle" width="300px"/>
+        <figcaption align="middle">Sample rate 1.</figcaption>
+      </td>
+      <td>
+        <img src="images/task2_4.png" align="middle" width="300px"/>
+        <figcaption align="middle">Sample rate 4.</figcaption>
+      </td>
+      <td>
+        <img src="images/task2_16.png" align="middle" width="300px"/>
+        <figcaption align="middle">Sample rate 16.</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h3 align="middle">Part 3: Transforms</h3>
+<p>
+For this task, I implemented rotation, translation, and scaling. Here's a sample image showcasing the effects of these transformations. I made the cubeman dance!
+</p>
+<div align="middle">
+<img src="images/task3.png" alt="Task 3" style="width: 500px;"/>
+</div>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Part 4: Barycentric coordinates</h3>
+<p>
+Barycentric coordinates represent a point P as the linear combination of the vertices A, B, and C of a triangle.
+<br /><br />
+Barycentric coordinates are used in graphics because they make it easy to interpolate values across a triangle if you just know what those values are at the vertices.
+<br /><br />
+Consider the following image, sourced from Wikipedia:
+</p>
+<div align="middle">
+<img src="images/Barycentric_RGB.svg" alt="Barycentric" style="width: 300px;"/>
+</div>
+<p>
+To rasterize a triangle like this, it is adequate to know what the colors are at the vertices. Then, using barycentric coordinates, for any point on the inside of the triangle, you can use the barycentric coordinates as weights used to combine the vertex colors.
+<br /><br />
+Here’s a sample image rasterized by my rasterizer using barycentric coordinates to interpolate colors across triangles:
+</p>
+<div align="middle">
+<img src="images/task4.png" alt="Color wheel" style="width: 300px;"/>
+</div>
+
+<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+<p>
+A common problem in graphics is mapping a texture like an image onto a surface. The texture and the surface will not correspond in their dimensions, so some kind of sampling strategy is necessary to map points on the surface to points on the texture.
+<br /><br />
+A few common strategies for texture mapping are nearest-neighbor, bilinear, and trilinear sampling. I implemented these in my rasterizer.
+<br /><br />
+In nearest neighbor, one simply finds the nearest pixel in the texture to the point on the surface. This is the simplest method, but it can result in aliasing.
+<br /><br />
+In bilinear sampling, one takes the weighted average of the four nearest pixels in the texture to the point on the surface. This results in a smoother image.
+<br /><br />
+Here’s 2 sample image rasterized by my rasterizer using texture mapping, nearest on the left and bilinear on the right, 1x1 supersampling on the top row and 4x4 supersampling on the bottom row:
+</p>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task5_nearest.png" align="middle" width="300px"/>
+        <figcaption align="middle">Nearest neighbor sampling.</figcaption>
+      </td>
+      <td>
+        <img src="images/task5_bi.png" align="middle" width="300px"/>
+        <figcaption align="middle">Bilinear sampling.</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task5_16_nearest.png" align="middle" width="300px"/>
+        <figcaption align="middle">Nearest neighbor sampling, 4x4 supersampling.</figcaption>
+      </td>
+      <td>
+        <img src="images/task5_16_bilinear.png" align="middle" width="300px"/>
+        <figcaption align="middle">Bilinear sampling, 4x4 supersampling.</figcaption>
+      </td>
+  </table>
+</div>
+<p>
+Notice how the lines in the 1x1 nearest neighbor image are faint, while the lines in the 1x1 bilinear image are smooth.
+<br /><br />
+The differences are less stark in the 4x4 supersampling images, but the bilinear image is still smoother.
+<br /><br />
+There will be large differences between nearest neighbor and bilinear sampling when the surface is much bigger or smaller than the texture, creating magnification or minification. In both cases, bilinear sampling will be smoother.
+</p>
+<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
+<p>
+To avoid aliasing due to minification, one can use mipmaps. Mipmaps are a series of textures, each half the size of the previous one, down to a 1x1 texture. When a point on the surface is much smaller than the texture, one can use mipmaps to sample from a smaller texture.
+<br /><br />
+Different ways exist to pick the mipmaps to sample from. These are called level sampling strategies. One way is to pick the mipmap that is the closest in size to the surface. Another way is to pick the two mipmaps that are closest in size to the surface and interpolate between them.
+<br /><br />
+I used a formula to calculate the mipmap level to sample from. The formula yields continuous values, which can then be used to either interpolate between two mipmaps or to pick the closest mipmap. The output of the formula has to be clamped to the range of mipmaps available, since the formula can yield negative values or values greater than the number of mipmaps.
+<br /><br />
+Here's a source image:
+</p>
+<div align="middle">
+<img src="../img/goat.PNG" alt="Goat" style="width: 300px;"/>
+</div>
+
+<p>
+And a rasterized version using texture mapping on different settings (L_ZERO, P_NEAREST; L_ZERO, P_LINEAR; L_NEAREST, P_NEAREST; L_NEAREST, P_LINEAR):
+</p>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task6zn.png" align="middle" width="300px"/>
+        <figcaption align="middle">L_ZERO, P_NEAREST.</figcaption>
+      </td>
+      <td>
+        <img src="images/task6zl.png" align="middle" width="300px"/>
+        <figcaption align="middle">L_ZERO, P_LINEAR.</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/task6nn.png" align="middle" width="300px"/>
+        <figcaption align="middle">L_NEAREST, P_NEAREST.</figcaption>
+      </td>
+      <td>
+        <img src="images/task6nl.png" align="middle" width="300px"/>
+        <figcaption align="middle">L_NEAREST, P_LINEAR.</figcaption>
+      </td>
+  </table>
+</div>
+
+<h2>Performance (best first)</h2>
+<p>
+Pixel sampling. Memory: Nearest, bilinear. Speed: Nearest, bilinear. Quality: Bilinear, nearest.
+<br /><br />
+Level sampling: Memory: Zero, nearest, linear. Speed: Zero, nearest, linear. Quality: Linear, nearest, zero.
+<br /><br />
+Sample rates: Memory: 16, 4, 1. Speed: 1, 4, 16. Quality: 16, 4, 1.
+</p>
+</body>
 </html>
