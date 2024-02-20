@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1774">
+	<defs>
+		<filter id="f"><feBlend mode="lighten" in2="BackgroundImage"/></filter>
+		<linearGradient id="r" gradientTransform="translate(0 1) rotate(-26.565)">
+			<stop stop-color="#f00" offset="0"/>
+			<stop stop-color="#000" offset="0.8944"/>
+		</linearGradient>
+		<linearGradient id="g" gradientTransform="rotate(90)">
+			<stop stop-color="#0f0" offset="0"/>
+			<stop stop-color="#000" offset="1"/>
+		</linearGradient>
+		<linearGradient id="b" gradientTransform="translate(1 1) rotate(-153.435)">
+			<stop stop-color="#00f" offset="0"/>
+			<stop stop-color="#000" offset="0.8944"/>
+		</linearGradient>
+		<mask id="m">
+			<path fill="#fff" d="M1024 0L0 1774h2048z"/>
+		</mask>
+	</defs>
+	<g mask="url(#m)">
+		<path fill="url(#r)" d="M2048 1774H0V0H2048z"/>
+		<path fill="url(#g)" d="M2048 1774H0V0H2048z" filter="url(#f)"/>
+		<path fill="url(#b)" d="M2048 1774H0V0H2048z" filter="url(#f)"/>
+	</g>
+</svg>
